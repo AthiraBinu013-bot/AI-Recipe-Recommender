@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Continue with Google — Rasoi</title>
+<title>Continue with Apple — Rasoi</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900&family=Manrope:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -13,57 +13,56 @@
     --basil:#2E6B4A; --basil-deep:#16331F; --basil-light:#E1EBDA;
     --turmeric:#E2872E; --turmeric-deep:#B5621A;
     --line:rgba(36,31,24,0.13);
-    --shadow:0 24px 60px -28px rgba(22,51,31,0.35);
+    --shadow:0 24px 60px -28px rgba(0,0,0,0.5);
     --radius:20px;
     --font-display:'Fraunces',serif; --font-body:'Manrope',sans-serif; --font-mono:'Space Mono',monospace;
   }
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   body{
-    background:var(--cream); color:var(--ink); font-family:var(--font-body);
+    background:#0B0B0D; color:#fff; font-family:var(--font-body);
     min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
   }
   .card{
-    width:100%; max-width:400px; background:var(--paper); border:1px solid var(--line);
+    width:100%; max-width:400px; background:#1A1A1D; border:1px solid rgba(255,255,255,.08);
     border-radius:var(--radius); box-shadow:var(--shadow); padding:40px 32px; text-align:center;
   }
   .demo-badge{
     display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:11px;
-    letter-spacing:.08em; text-transform:uppercase; color:var(--turmeric-deep);
-    background:#FBE6C8; padding:5px 12px; border-radius:999px; margin-bottom:24px;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--turmeric);
+    background:rgba(226,135,46,.15); padding:5px 12px; border-radius:999px; margin-bottom:24px;
   }
   .brand-mark{
     width:48px; height:48px; border-radius:14px; background:var(--basil); margin:0 auto 18px;
     display:flex; align-items:center; justify-content:center;
   }
   .brand-mark svg{width:26px;height:26px}
-  h1{font-family:var(--font-display); font-weight:600; font-size:1.4rem; margin-bottom:8px}
-  .sub{color:var(--ink-soft); font-size:.92rem; margin-bottom:30px; line-height:1.55}
+  h1{font-family:var(--font-display); font-weight:600; font-size:1.4rem; margin-bottom:8px; color:#fff}
+  .sub{color:#9C9C9E; font-size:.92rem; margin-bottom:30px; line-height:1.55}
   .spinner{
-    width:34px; height:34px; border-radius:50%; border:3px solid var(--basil-light);
-    border-top-color:var(--basil); margin:0 auto 26px; animation:spin .9s linear infinite;
+    width:34px; height:34px; border-radius:50%; border:3px solid #333;
+    border-top-color:#fff; margin:0 auto 26px; animation:spin .9s linear infinite;
   }
   @keyframes spin{to{transform:rotate(360deg)}}
-  .status{font-size:.88rem; color:var(--ink-soft); margin-bottom:28px; font-family:var(--font-mono)}
-  .account-row{
-    display:none; align-items:center; gap:12px; text-align:left; padding:14px 16px;
-    border:1px solid var(--line); border-radius:12px; margin-bottom:24px; background:var(--cream);
+  .status{font-size:.88rem; color:#9C9C9E; margin-bottom:28px; font-family:var(--font-mono)}
+  .face-row{
+    display:none; align-items:center; justify-content:center; gap:10px; padding:18px 16px;
+    border:1px solid rgba(255,255,255,.1); border-radius:12px; margin-bottom:24px; background:#0B0B0D;
   }
-  .account-row.show{display:flex}
-  .g-icon{width:34px;height:34px;border-radius:50%;flex:none}
-  .account-name{font-weight:700;font-size:.92rem}
-  .account-email{font-size:.78rem;color:var(--ink-soft);font-family:var(--font-mono)}
+  .face-row.show{display:flex}
+  .face-row svg{width:22px;height:22px}
+  .face-row span{font-size:.86rem; color:#fff}
   .btn{
     display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%;
     padding:13px 20px; border-radius:999px; font-weight:700; font-size:.94rem;
-    background:var(--basil); color:#fff; transition:transform .15s ease, background .15s ease;
+    background:#fff; color:#0B0B0D; transition:transform .15s ease, opacity .15s ease;
   }
-  .btn:hover{background:var(--basil-deep); transform:translateY(-1px)}
+  .btn:hover{opacity:.85; transform:translateY(-1px)}
   .back-link{
-    display:inline-block; margin-top:22px; font-size:.84rem; color:var(--ink-soft); text-decoration:underline;
+    display:inline-block; margin-top:22px; font-size:.84rem; color:#9C9C9E; text-decoration:underline;
   }
-  .back-link:hover{color:var(--ink)}
+  .back-link:hover{color:#fff}
   .note{
-    margin-top:28px; font-size:.74rem; color:var(--ink-faint); line-height:1.5; border-top:1px solid var(--line);
+    margin-top:28px; font-size:.74rem; color:#6E6E70; line-height:1.5; border-top:1px solid rgba(255,255,255,.08);
     padding-top:18px;
   }
 </style>
@@ -74,30 +73,27 @@
     <div class="brand-mark">
       <svg viewBox="0 0 24 24" fill="none"><path d="M6 15c0-5 2.7-9 6-9s6 4 6 9" stroke="#FAF3E5" stroke-width="1.8" stroke-linecap="round"/><path d="M12 6v9" stroke="#E2872E" stroke-width="1.8" stroke-linecap="round"/></svg>
     </div>
-    <h1 id="heading">Connecting to Google&hellip;</h1>
-    <p class="sub" id="subtext">This is a placeholder flow standing in for real Google sign-in until OAuth is wired up.</p>
+    <h1 id="heading">Connecting to Apple&hellip;</h1>
+    <p class="sub" id="subtext">This is a placeholder flow standing in for real Apple sign-in until OAuth is wired up.</p>
 
     <div class="spinner" id="spinner"></div>
     <div class="status" id="statusText">verifying demo session</div>
 
-    <div class="account-row" id="accountRow">
-      <svg class="g-icon" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="#E1EBDA"/><text x="24" y="31" text-anchor="middle" font-family="Manrope, sans-serif" font-size="20" font-weight="700" fill="#16331F">D</text></svg>
-      <div>
-        <div class="account-name">Demo User</div>
-        <div class="account-email">demo.user@example.com</div>
-      </div>
+    <div class="face-row" id="faceRow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 9h.01M16 9h.01M8 15c1.2 1 2.8 1 4 0" stroke-linecap="round"/></svg>
+      <span>Demo User verified</span>
     </div>
 
     <button class="btn" id="continueBtn" style="display:none">Continue to Rasoi</button>
     <a href="login.html" class="back-link">Cancel and go back</a>
 
-    <p class="note">Real Google sign-in requires an OAuth client ID from Google Cloud Console and server-side token verification. This page only simulates that flow for prototyping purposes.</p>
+    <p class="note">Real Apple sign-in requires a Service ID and key from Apple Developer, plus server-side token verification. This page only simulates that flow for prototyping purposes.</p>
   </div>
 
 <script>
   const spinner = document.getElementById('spinner');
   const statusText = document.getElementById('statusText');
-  const accountRow = document.getElementById('accountRow');
+  const faceRow = document.getElementById('faceRow');
   const continueBtn = document.getElementById('continueBtn');
   const heading = document.getElementById('heading');
   const subtext = document.getElementById('subtext');
@@ -105,9 +101,9 @@
   setTimeout(() => {
     spinner.style.display = 'none';
     statusText.style.display = 'none';
-    heading.textContent = 'Choose a demo account';
-    subtext.textContent = 'In production this list would come from Google. Here it is a stand-in.';
-    accountRow.classList.add('show');
+    heading.textContent = 'Identity confirmed';
+    subtext.textContent = 'In production this would use Face ID or Touch ID via Apple. Here it is a stand-in.';
+    faceRow.classList.add('show');
     continueBtn.style.display = 'inline-flex';
   }, 1200);
 
