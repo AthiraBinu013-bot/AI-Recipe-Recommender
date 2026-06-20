@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rasoi — Cook with what you already have</title>
+<meta name="description" content="Rasoi is an AI kitchen assistant that turns the ingredients, budget, and time you already have into recipes worth cooking.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%232E6B4A'/%3E%3Cpath d='M20 40c0-9 6-17 12-17s12 8 12 17' stroke='%23FAF3E5' stroke-width='3.4' fill='none' stroke-linecap='round'/%3E%3Cpath d='M32 23v17' stroke='%23E2872E' stroke-width='3.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,400..700&family=Caveat:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FAF3E5;
+    --paper:#FFFFFF;
+    --ink:#241F18;
+    --ink-soft:#6B6354;
+    --ink-faint:#A89F8C;
+    --basil:#2E6B4A;
+    --basil-deep:#16331F;
+    --basil-light:#E1EBDA;
+    --turmeric:#E2872E;
+    --turmeric-deep:#B5621A;
+    --turmeric-light:#FBE6C8;
+    --blue:#2C6B8C;
+    --blue-deep:#18435A;
+    --blue-light:#DCEAF0;
+    --line:rgba(36,31,24,0.13);
+    --shadow:0 24px 60px -28px rgba(22,51,31,0.45);
+    --shadow-sm:0 10px 24px -16px rgba(22,51,31,0.35);
+    --radius:20px;
+    --font-display:'Fraunces',serif;
+    --font-hand:'Caveat',cursive;
+    --font-body:'Manrope',sans-serif;
+    --font-mono:'Space Mono',monospace;
+  }
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  img{max-width:100%;display:block}
+  a{color:inherit;text-decoration:none}
+  ul{list-style:none}
+  button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  section{position:relative}
+  .wrap{width:100%;max-width:1240px;margin:0 auto;padding:0 32px}
+  :focus-visible{outline:2.5px solid var(--blue);outline-offset:3px;border-radius:4px}
+
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--basil);
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+  }
+  .eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--turmeric)}
+
+  h1,h2,h3{font-family:var(--font-display);font-weight:600;line-height:1.08;letter-spacing:-.01em;color:var(--ink)}
+  .lede{color:var(--ink-soft);font-size:1.07rem;max-width:46ch}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:9px;
+    padding:14px 26px;border-radius:999px;font-weight:700;font-size:.97rem;
+    transition:transform .18s ease, box-shadow .18s ease, background .18s ease, color .18s ease, border-color .18s ease;
+    white-space:nowrap;
+  }
+  .btn-primary{background:var(--turmeric);color:#2A1604;box-shadow:var(--shadow-sm)}
+  .btn-primary:hover{background:var(--turmeric-deep);transform:translateY(-2px);box-shadow:0 16px 30px -14px rgba(181,98,26,.55)}
+  .btn-outline{border:1.6px solid var(--basil);color:var(--basil-deep)}
+  .btn-outline:hover{background:var(--basil-light);transform:translateY(-2px)}
+  .btn-ghost{color:var(--ink);font-weight:600;padding:10px 4px}
+  .btn-ghost:hover{color:var(--basil)}
+  .btn-sm{padding:10px 18px;font-size:.88rem}
+
+  /* ---------- HEADER ---------- */
+  .site-header{
+    position:sticky;top:0;z-index:100;
+    padding:18px 0;
+    transition:background .25s ease, box-shadow .25s ease, padding .25s ease;
+  }
+  .site-header.scrolled{
+    background:rgba(250,243,229,.88);
+    backdrop-filter:blur(10px);
+    box-shadow:0 1px 0 var(--line);
+    padding:13px 0;
+  }
+  .nav-row{display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:1.4rem;color:var(--ink)}
+  .brand-mark{width:36px;height:36px;border-radius:11px;background:var(--basil);display:flex;align-items:center;justify-content:center;flex:none}
+  .brand-mark svg{width:20px;height:20px}
+  .brand-tag{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;color:var(--ink-faint);text-transform:uppercase;margin-left:2px;display:block}
+
+  .nav-links{display:flex;align-items:center;gap:34px;font-weight:600;font-size:.95rem;color:var(--ink-soft)}
+  .nav-links a{position:relative;padding:4px 0}
+  .nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;background:var(--turmeric);transform:scaleX(0);transform-origin:left;transition:transform .2s ease}
+  .nav-links a:hover{color:var(--ink)}
+  .nav-links a:hover::after{transform:scaleX(1)}
+
+  .nav-actions{display:flex;align-items:center;gap:18px}
+  .nav-toggle{display:none;flex-direction:column;gap:5px;width:30px;padding:6px}
+  .nav-toggle span{height:2px;background:var(--ink);border-radius:2px;transition:transform .25s ease, opacity .25s ease}
+
+  /* ---------- HERO ---------- */
+  .hero{padding:56px 0 70px}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+  .hero-copy h1{font-size:clamp(2.4rem,4.4vw,3.55rem);margin:18px 0 20px}
+  .hero-copy h1 em{font-style:normal;color:var(--basil);position:relative}
+  .hero-copy .lede{font-size:1.12rem;margin-bottom:30px}
+  .hero-cta{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-bottom:38px}
+  .hero-link{font-weight:700;font-size:.95rem;display:inline-flex;align-items:center;gap:7px;color:var(--blue-deep)}
+  .hero-link svg{width:16px;height:16px;transition:transform .18s ease}
+  .hero-link:hover svg{transform:translateX(3px)}
+
+  .stat-row{display:flex;gap:34px;flex-wrap:wrap;padding-top:26px;border-top:1px solid var(--line)}
+  .stat-row div{display:flex;flex-direction:column;gap:3px}
+  .stat-num{font-family:var(--font-mono);font-weight:700;font-size:1.32rem;color:var(--basil-deep)}
+  .stat-label{font-size:.82rem;color:var(--ink-soft)}
+
+  .hero-visual{position:relative}
+  .hero-photo-frame{
+    border-radius:28px;overflow:hidden;aspect-ratio:4/4.6;
+    box-shadow:var(--shadow);position:relative;
+  }
+  .hero-photo-frame img{width:100%;height:100%;object-fit:cover}
+  .hero-photo-frame::after{content:"";position:absolute;inset:0;background:linear-gradient(195deg, rgba(22,51,31,0) 45%, rgba(22,51,31,.55) 100%)}
+  .hero-blob{position:absolute;width:150px;height:150px;border-radius:50%;background:var(--turmeric-light);z-index:-1;top:-30px;right:-30px;filter:blur(2px)}
+
+  .mockup-card{
+    position:absolute;left:-34px;bottom:-30px;width:300px;
+    background:var(--paper);border-radius:18px;padding:18px 18px 16px;
+    box-shadow:var(--shadow);border:1px solid var(--line);
+  }
+  .mockup-label{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:11px}
+  .chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:6px}
+  .chip{
+    font-size:.78rem;font-weight:700;background:var(--basil-light);color:var(--basil-deep);
+    padding:6px 11px;border-radius:999px;display:inline-flex;align-items:center;gap:5px;
+    opacity:0;animation:chip-in .5s ease forwards;
+  }
+  .chip:nth-child(1){animation-delay:.15s}
+  .chip:nth-child(2){animation-delay:.32s}
+  .chip:nth-child(3){animation-delay:.49s}
+  .chip:nth-child(4){animation-delay:.66s}
+  @keyframes chip-in{from{opacity:0;transform:translateY(6px) scale(.92)}to{opacity:1;transform:none}}
+
+  .mockup-arrow{
+    font-family:var(--font-hand);font-size:1.1rem;color:var(--turmeric-deep);
+    display:flex;align-items:center;gap:8px;margin:8px 0 12px;opacity:0;
+    animation:chip-in .5s ease forwards;animation-delay:.85s;
+  }
+  .mockup-arrow svg{width:18px;height:18px;flex:none}
+
+  .result-card{
+    display:flex;gap:11px;align-items:center;background:var(--cream);
+    border-radius:13px;padding:10px;opacity:0;animation:chip-in .5s ease forwards;animation-delay:1.05s;
+  }
+  .result-thumb{width:46px;height:46px;border-radius:9px;object-fit:cover;flex:none}
+  .result-title{font-weight:800;font-size:.86rem;margin-bottom:4px}
+  .result-meta{display:flex;gap:9px;font-family:var(--font-mono);font-size:.68rem;color:var(--ink-soft)}
+
+  /* ---------- MARQUEE ---------- */
+  .marquee-strip{background:var(--basil-deep);padding:15px 0;overflow:hidden}
+  .marquee-track{display:flex;gap:46px;width:max-content;animation:scroll-left 32s linear infinite}
+  .marquee-strip:hover .marquee-track{animation-play-state:paused}
+  .marquee-track span{
+    font-family:var(--font-mono);font-size:.82rem;letter-spacing:.06em;text-transform:uppercase;
+    color:#CFE3D6;white-space:nowrap;display:flex;align-items:center;gap:10px;
+  }
+  .marquee-track span::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--turmeric)}
+  @keyframes scroll-left{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* ---------- SECTION HEADS ---------- */
+  .section-pad{padding:96px 0}
+  .section-head{max-width:640px;margin-bottom:54px}
+  .section-head h2{font-size:clamp(1.9rem,3vw,2.5rem);margin-top:14px}
+  .section-head .lede{margin-top:14px}
+  .section-head.center{margin-left:auto;margin-right:auto;text-align:center}
+  .section-head.center .eyebrow{justify-content:center;width:100%}
+  .section-head.center .lede{margin-left:auto;margin-right:auto}
+
+  /* ---------- HOW IT WORKS ---------- */
+  .how{background:var(--paper)}
+  .how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
+  .how-step{padding:32px 26px;border:1px solid var(--line);border-radius:var(--radius);position:relative;transition:transform .2s ease, box-shadow .2s ease}
+  .how-step:hover{transform:translateY(-5px);box-shadow:var(--shadow-sm)}
+  .how-num{font-family:var(--font-mono);font-size:.8rem;color:var(--turmeric-deep);font-weight:700;letter-spacing:.05em;margin-bottom:18px;display:block}
+  .how-step h3{font-size:1.22rem;margin-bottom:10px}
+  .how-step p{color:var(--ink-soft);font-size:.95rem}
+  .how-step-icon{width:42px;height:42px;border-radius:11px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+  .how-step-icon svg{width:21px;height:21px;color:var(--blue-deep)}
+  .how-step:nth-child(2) .how-step-icon{background:var(--basil-light)}
+  .how-step:nth-child(2) .how-step-icon svg{color:var(--basil-deep)}
+  .how-step:nth-child(3) .how-step-icon{background:var(--turmeric-light)}
+  .how-step:nth-child(3) .how-step-icon svg{color:var(--turmeric-deep)}
+
+  /* ---------- FEATURES BENTO ---------- */
+  .bento{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:198px;gap:22px}
+  .feature-card{
+    border-radius:var(--radius);padding:26px;display:flex;flex-direction:column;justify-content:flex-end;
+    position:relative;overflow:hidden;border:1px solid var(--line);background:var(--paper);
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .feature-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-sm)}
+  .feature-card.flagship{grid-column:span 2;grid-row:span 2;color:#fff;justify-content:flex-end}
+  .feature-card.flagship::before{content:"";position:absolute;inset:0;background:linear-gradient(200deg, rgba(22,51,31,.25), rgba(22,51,31,.92));z-index:0}
+  .feature-card.flagship img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1}
+  .feature-card.flagship .f-icon{background:rgba(255,255,255,.18)}
+  .feature-card.flagship .f-icon svg{color:#fff}
+  .feature-card.flagship h3,.feature-card.flagship p{position:relative;z-index:1}
+  .feature-card.flagship p{color:#E7EFE4}
+
+  .feature-card.wide{grid-column:span 2}
+  .f-icon{width:40px;height:40px;border-radius:11px;background:var(--sage,var(--basil-light));display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+  .f-icon svg{width:20px;height:20px;color:var(--basil-deep)}
+  .feature-card h3{font-size:1.08rem;margin-bottom:6px}
+  .feature-card p{font-size:.87rem;color:var(--ink-soft);line-height:1.5}
+  .feature-tag{
+    position:absolute;top:22px;right:22px;font-family:var(--font-mono);font-size:.66rem;
+    background:var(--turmeric-light);color:var(--turmeric-deep);padding:4px 9px;border-radius:999px;letter-spacing:.04em;
+  }
+  .feature-card.flagship .feature-tag{background:rgba(255,255,255,.16);color:#fff}
+  .feature-card.c-blue .f-icon{background:var(--blue-light)}
+  .feature-card.c-blue .f-icon svg{color:var(--blue-deep)}
+  .feature-card.c-orange .f-icon{background:var(--turmeric-light)}
+  .feature-card.c-orange .f-icon svg{color:var(--turmeric-deep)}
+
+  /* ---------- GALLERY ---------- */
+  .gallery{background:var(--basil-deep);color:#fff}
+  .gallery .section-head h2{color:#fff}
+  .gallery .section-head .lede{color:#CFE3D6}
+  .gallery .eyebrow{color:#9FD4B3}
+  .gallery .eyebrow::before{background:var(--turmeric)}
+  .gallery-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:stretch}
+  .gallery-panel{border-radius:var(--radius);overflow:hidden;position:relative;min-height:380px}
+  .gallery-panel img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+  .gallery-panel::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg, rgba(10,24,15,.78), rgba(10,24,15,0) 55%)}
+  .gallery-caption{position:absolute;left:24px;right:24px;bottom:22px;z-index:2}
+  .gallery-caption .tag{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--turmeric-light);display:block;margin-bottom:6px}
+  .gallery-caption h3{color:#fff;font-size:1.3rem}
+
+  /* ---------- REVIEWS ---------- */
+  .reviews-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .review-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:28px}
+  .stars{display:flex;gap:3px;margin-bottom:14px}
+  .stars svg{width:16px;height:16px;color:var(--turmeric)}
+  .review-quote{font-size:.97rem;color:var(--ink);margin-bottom:20px;line-height:1.6}
+  .review-person{display:flex;align-items:center;gap:11px}
+  .avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:700;font-size:.8rem;color:#fff;flex:none}
+  .review-name{font-weight:700;font-size:.88rem}
+  .review-role{font-size:.78rem;color:var(--ink-soft)}
+
+  /* ---------- CTA BANNER ---------- */
+  .cta-banner{background:linear-gradient(120deg, var(--basil) 0%, var(--basil-deep) 100%);border-radius:28px;padding:64px 56px;display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;margin:0 auto;max-width:1240px;color:#fff}
+  .cta-banner h2{color:#fff;font-size:clamp(1.7rem,2.6vw,2.3rem);margin-bottom:10px}
+  .cta-banner p{color:#D8E8DC;max-width:42ch}
+  .cta-banner .btn-primary{box-shadow:none}
+
+  /* ---------- FOOTER ---------- */
+  .site-footer{background:var(--ink);color:#D8D2C4;padding:74px 0 0;margin-top:110px}
+  .footer-grid{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:40px;padding-bottom:54px;border-bottom:1px solid rgba(255,255,255,.1)}
+  .footer-brand .brand{color:#fff}
+  .footer-brand p{margin:16px 0 22px;color:#A89F8C;font-size:.92rem;max-width:30ch}
+  .social-row{display:flex;gap:12px}
+  .social-row a{width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;transition:background .2s ease, border-color .2s ease}
+  .social-row a:hover{background:var(--turmeric);border-color:var(--turmeric)}
+  .social-row svg{width:16px;height:16px}
+  .footer-col h4{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:#A89F8C;margin-bottom:18px}
+  .footer-col ul{display:flex;flex-direction:column;gap:12px}
+  .footer-col a{font-size:.92rem;color:#D8D2C4;transition:color .15s ease}
+  .footer-col a:hover{color:var(--turmeric)}
+  .footer-bottom{display:flex;align-items:center;justify-content:space-between;padding:26px 0;font-size:.82rem;color:#827A6A;flex-wrap:wrap;gap:12px}
+  .footer-bottom .legal-row{display:flex;gap:22px;flex-wrap:wrap}
+
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease, transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:980px){
+    .hero-grid{grid-template-columns:1fr;gap:64px}
+    .hero-visual{order:-1;max-width:420px;margin:0 auto 50px}
+    .mockup-card{position:static;width:100%;margin-top:22px}
+    .bento{grid-template-columns:repeat(2,1fr)}
+    .feature-card.flagship{grid-column:span 2;grid-row:span 1;min-height:280px}
+    .feature-card.wide{grid-column:span 2}
+    .how-grid,.reviews-grid{grid-template-columns:1fr}
+    .gallery-grid{grid-template-columns:1fr}
+    .footer-grid{grid-template-columns:1fr 1fr;row-gap:36px}
+  }
+  @media (max-width:760px){
+    .nav-links{
+      position:fixed;inset:74px 18px auto 18px;background:var(--paper);border-radius:18px;
+      flex-direction:column;align-items:flex-start;gap:6px;padding:18px;box-shadow:var(--shadow);
+      border:1px solid var(--line);transform:translateY(-14px);opacity:0;pointer-events:none;transition:transform .22s ease, opacity .22s ease;
+    }
+    .nav-links a{width:100%;padding:10px 6px}
+    .nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}
+    .nav-toggle{display:flex}
+    .nav-actions .btn-outline{display:none}
+    .wrap{padding:0 20px}
+    .cta-banner{padding:46px 28px;flex-direction:column;text-align:center;border-radius:22px}
+    .cta-banner .lede{margin:0 auto}
+    .footer-grid{grid-template-columns:1fr}
+    .footer-bottom{flex-direction:column;align-items:flex-start}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="siteHeader">
+  <div class="wrap nav-row">
+    <a href="#top" class="brand">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 15c0-5 2.7-9 6-9s6 4 6 9" stroke="#FAF3E5" stroke-width="1.8" stroke-linecap="round"/><path d="M12 6v9" stroke="#E2872E" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </span>
+      <span>Rasoi<span class="brand-tag">AI Kitchen Assistant</span></span>
+    </a>
+
+    <nav class="nav-links" id="navLinks">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="#gallery">Inside Rasoi</a>
+      <a href="#reviews">Reviews</a>
+    </nav>
+
+    <div class="nav-actions">
+      <a href="login.html" class="btn btn-outline btn-sm">Log in</a>
+      <a href="login.html?mode=signup" class="btn btn-primary btn-sm">Get started free</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow">AI Kitchen Assistant</span>
+        <h1>Cook something good with <em>what's already</em> in your kitchen.</h1>
+        <p class="lede">Tell Rasoi what's in your fridge, your budget, and how much time you've got. It hands back three recipes worth making — not three hundred to scroll through.</p>
+        <div class="hero-cta">
+          <a href="login.html?mode=signup" class="btn btn-primary">Get started free</a>
+          <a href="#how-it-works" class="hero-link">See how it works
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+        <div class="stat-row">
+          <div><span class="stat-num">10,000+</span><span class="stat-label">home cooks &amp; counting</span></div>
+          <div><span class="stat-num">500+</span><span class="stat-label">regional recipes</span></div>
+          <div><span class="stat-num">₹50</span><span class="stat-label">budget meals, sorted</span></div>
+          <div><span class="stat-num">15 min</span><span class="stat-label">fastest dinner filter</span></div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-blob" aria-hidden="true"></div>
+        <div class="hero-photo-frame">
+          <img src="https://images.unsplash.com/photo-1486759417841-61a1b6114385?auto=format&fit=crop&w=1200&q=80" alt="A wide spread of fresh organic vegetables — tomatoes, eggplants, squash — laid out at a farm stand">
+        </div>
+        <div class="mockup-card" aria-hidden="true">
+          <span class="mockup-label">What's in your kitchen?</span>
+          <div class="chip-row">
+            <span class="chip">🍅 Tomato</span>
+            <span class="chip">🧅 Onion</span>
+            <span class="chip">🍚 Rice</span>
+            <span class="chip">🥚 Eggs</span>
+          </div>
+          <div class="mockup-arrow">
+            becomes
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 4v15M6 13l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="result-card">
+            <img class="result-thumb" src="https://images.unsplash.com/photo-1563865436874-9aef32095fad?auto=format&fit=crop&w=100&q=80" alt="">
+            <div>
+              <div class="result-title">Tomato Egg Rice Bowl</div>
+              <div class="result-meta">
+                <span>⏱ 15 min</span><span>₹ 60</span><span>320 kcal</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-strip" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Punjabi</span><span>South Indian</span><span>Kerala-style</span><span>Bengali</span><span>Gujarati</span><span>Hyderabadi</span><span>Maharashtrian</span><span>North-Eastern</span>
+      <span>Punjabi</span><span>South Indian</span><span>Kerala-style</span><span>Bengali</span><span>Gujarati</span><span>Hyderabadi</span><span>Maharashtrian</span><span>North-Eastern</span>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section class="how section-pad" id="how-it-works">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">How it works</span>
+        <h2>Three steps between you and dinner.</h2>
+        <p class="lede">No browsing, no fifteen open tabs. Rasoi narrows it down before you've even opened the fridge twice.</p>
+      </div>
+
+      <div class="how-grid">
+        <div class="how-step reveal">
+          <div class="how-step-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <span class="how-num">01</span>
+          <h3>Tell us what's in your kitchen</h3>
+          <p>List your ingredients, or snap a photo of your fridge and pantry shelf — Rasoi reads it for you.</p>
+        </div>
+        <div class="how-step reveal">
+          <div class="how-step-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v4M12 17v4M5 12H3M21 12h-2M7.8 7.8 6.4 6.4M17.6 17.6l-1.4-1.4M16.2 7.8l1.4-1.4M6.4 17.6l1.4-1.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.4" stroke="currentColor" stroke-width="1.8"/></svg></div>
+          <span class="how-num">02</span>
+          <h3>Set your taste, budget &amp; time</h3>
+          <p>Vegetarian, gluten-free, ₹100 a meal, fifteen minutes flat — whatever fits how your day's going.</p>
+        </div>
+        <div class="how-step reveal">
+          <div class="how-step-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <span class="how-num">03</span>
+          <h3>Get recipes made for you</h3>
+          <p>Three solid options with clear steps, sized to however many people you're actually feeding tonight.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section-pad" id="features">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Everything in one kitchen app</span>
+        <h2>Built around how people actually cook.</h2>
+        <p class="lede">Every feature below answers a real question we kept hearing: what can I make, what will it cost, and how long will it take.</p>
+      </div>
+
+      <div class="bento reveal">
+        <div class="feature-card flagship">
+          <img src="https://images.unsplash.com/photo-1775433205046-86e060feff06?auto=format&fit=crop&w=900&q=70" alt="">
+          <span class="feature-tag">Most requested</span>
+          <div class="f-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 13a8 8 0 0 1 16 0v6H4v-6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <h3>Fridge-to-Recipe AI</h3>
+          <p>List what you have. Rasoi tells you what to cook, what you're missing, and how long it'll take — start to plate.</p>
+        </div>
+
+        <div class="feature-card c-orange">
+          <span class="feature-tag">📸 Scan</span>
+          <div class="f-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 7l1.4-2.5h5.2L16 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="13.5" r="3.2" stroke="currentColor" stroke-width="1.8"/></svg></div>
+          <h3>Ingredient Scanner</h3>
+          <p>Photograph your produce drawer — Rasoi reads it and builds a recipe around what it sees.</p>
+        </div>
+
+        <div class="feature-card c-blue">
+          <div class="f-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/></svg></div>
+          <h3>Budget-Based Cooking</h3>
+          <p>Pick ₹50, ₹100, or ₹200 a meal. Every suggestion stays inside it, groceries included.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="f-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M22 10v6M2 10l10-5 10 5-10 5-10-5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M6 12v5c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-5" stroke="currentColor" stroke-width="1.8"/></svg></div>
+          <h3>Student Mode</h3>
+          <p>Hostel-friendly meals — one pan, few utensils, even fewer rupees.</p>
+        </div>
+
+        <div class="feature-card wide c-orange">
+          <div class="f-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M20.8 8.6c0 5-8.8 11-8.8 11s-8.8-6-8.8-11a4.4 4.4 0 0 1 8.8-2 4.4 4.4 0 0 1 8.8 2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+          <h3>Health Coach Integration</h3>
+          <p>Losing, gaining, maintaining — tell us the goal and we adjust calories and protein on every suggestion.</p>
+        </div>
+
+        <div class="feature-card c-blue">
+          <div class="f-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0 1 14.6-4.6M20 12a8 8 0 0 1-14.6 4.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18.6 4.4v4h-4M5.4 19.6v-4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h3>Leftover Rescue</h3>
+          <p>Half a cabbage and some extra paneer become dinner — not something you toss next week.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="f-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-5.2-9.4-9A5.4 5.4 0 0 1 12 6a5.4 5.4 0 0 1 9.4 6c-2.4 3.8-9.4 9-9.4 9Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+          <h3>Regional Recommendations</h3>
+          <p>Punjabi on Sunday, Kerala on Tuesday — recipes tuned to where you're cooking from.</p>
+        </div>
+
+        <div class="feature-card c-orange">
+          <div class="f-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M9 22h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <h3>Voice Assistant</h3>
+          <p>Say what's in your kitchen out loud, get an answer back the same way — hands stay free.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section class="gallery section-pad" id="gallery">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Inside Rasoi</span>
+        <h2>Real ingredients, real regional flavor.</h2>
+        <p class="lede">No stock-photo dinners. Every suggestion is built from produce you can actually find nearby, cooked the way your region cooks it.</p>
+      </div>
+
+      <div class="gallery-grid reveal">
+        <div class="gallery-panel">
+          <img src="https://images.unsplash.com/photo-1563865436874-9aef32095fad?auto=format&fit=crop&w=1100&q=80" alt="A flatlay of raw organic vegetables and herbs on a dark stone surface">
+          <div class="gallery-caption">
+            <span class="tag">Fresh stock</span>
+            <h3>Built around what's actually in season near you.</h3>
+          </div>
+        </div>
+        <div class="gallery-panel">
+          <img src="https://images.unsplash.com/photo-1775433205046-86e060feff06?auto=format&fit=crop&w=900&q=80" alt="A vendor selling colorful loose spices at a market in Delhi, India">
+          <div class="gallery-caption">
+            <span class="tag">Regional spice</span>
+            <h3>Flavor profiles tuned to your part of the country.</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVIEWS -->
+  <section class="section-pad" id="reviews">
+    <div class="wrap">
+      <div class="section-head center reveal" style="margin-left:auto;margin-right:auto;">
+        <span class="eyebrow">Reviews</span>
+        <h2>What home cooks are saying.</h2>
+      </div>
+
+      <div class="reviews-grid reveal">
+        <div class="review-card">
+          <div class="stars" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L10 14.9 4.4 18.1l1.4-6.3L1 7.5l6.4-.6L10 1Z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L10 14.9 4.4 18.1l1.4-6.3L1 7.5l6.4-.6L10 1Z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L10 14.9 4.4 18.1l1.4-6.3L1 7.5l6.4-.6L10 1Z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L10 14.9 4.4 18.1l1.4-6.3L1 7.5l6.4-.6L10 1Z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L10 14.9 4.4 18.1l1.4-6.3L1 7.5l6.4-.6L10 1Z"/></svg>
+          </div>
+          <p class="review-quote">"I had rice, eggs, and one onion. Rasoi turned that into dinner in twelve minutes — and warned me I was out of curry leaves before I even noticed."</p>
+          <div class="review-person">
+            <span class="avatar" style="background:var(--basil)">A</span>
+            <div><div class="review-name">Ananya</div><div class="review-role">Hostel student, Bengaluru</div></div>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <div class="stars" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L10 14.9 4.4 18.1l1.4-6.3L1 7.5l6.4-.6L10 1Z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L10 14.9 4.4 18.1l1.4-6.3L1 7.5l6.4-.6L10 1Z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L10 14.9 4.4 18.1l1.4-6.3L1 7.5l6.4-.6L10 1Z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L10 14.9 4.4 18.1l1.4-6.3L1 7.5l6.4-.6L10 1Z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L10 14.9 4.4 18.1l1.4-6.3L1 7.5l6.4-.6L10 1Z"/></svg>
+          </div>
+          <p class="review-quote">"₹100 a meal sounded impossible until Rasoi started doing the math for me. My grocery bill is down and I'm actually cooking again instead of ordering in."</p>
+          <div class="review-person">
+            <span class="avatar" style="background:var(--turmeric)">R</span>
+            <div><div class="review-name">Rohit</div><div class="review-role">Working professional, Pune</div></div>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <div class="stars" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L10 14.9 4.4 18.1l1.4-6.3L1 7.5l6.4-.6L10 1Z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L10 14.9 4.4 18.1l1.4-6.3L1 7.5l6.4-.6L10 1Z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L10 14.9 4.4 18.1l1.4-6.3L1 7.5l6.4-.6L10 1Z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L10 14.9 4.4 18.1l1.4-6.3L1 7.5l6.4-.6L10 1Z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L10 14.9 4.4 18.1l1.4-6.3L1 7.5l6.4-.6L10 1Z"/></svg>
+          </div>
+          <p class="review-quote">"It suggested a Kerala-style stew using leftover coconut milk I was about to throw out. That single suggestion alone sold me on the app."</p>
+          <div class="review-person">
+            <span class="avatar" style="background:var(--blue)">M</span>
+            <div><div class="review-name">Meera</div><div class="review-role">Home cook, Kochi</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BANNER -->
+  <section class="section-pad" style="padding-top:0">
+    <div class="cta-banner reveal">
+      <div>
+        <h2>Stop wondering what's for dinner.</h2>
+        <p class="lede">Your next meal is probably already in your kitchen. Let's go find it.</p>
+      </div>
+      <a href="login.html?mode=signup" class="btn btn-primary">Get started free</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#top" class="brand">
+          <span class="brand-mark">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 15c0-5 2.7-9 6-9s6 4 6 9" stroke="#FAF3E5" stroke-width="1.8" stroke-linecap="round"/><path d="M12 6v9" stroke="#E2872E" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </span>
+          <span>Rasoi</span>
+        </a>
+        <p>Your kitchen, decoded. An AI kitchen assistant for everything you already have on the shelf.</p>
+        <div class="social-row">
+          <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="17.2" cy="6.8" r="1"/></svg></a>
+          <a href="#" aria-label="X / Twitter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3l7.5 9.6L3.4 21h2.3l6-6.9 4.6 6.9H21l-7.8-10L20.3 3h-2.3l-5.5 6.3L7.4 3H3Z"/></svg></a>
+          <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="6" width="19" height="12" rx="3.5"/><path d="M10.5 9.5l5 2.5-5 2.5v-5Z" fill="currentColor" stroke="none"/></svg></a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how-it-works">How it works</a></li>
+          <li><a href="#reviews">Reviews</a></li>
+          <li><a href="dashboard.html">Dashboard</a></li>
+          <li><a href="login.html">Log in</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="about.html">About us</a></li>
+          <li><a href="careers.html">Careers</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="privacy-policy.html">Privacy policy</a></li>
+          <li><a href="terms-of-service.html">Terms of service</a></li>
+          <li><a href="cookie-policy.html">Cookie policy</a></li>
+          <li><a href="refund-policy.html">Refund policy</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 Rasoi. All rights reserved.</span>
+      <div class="legal-row">
+        <a href="privacy-policy.html">Privacy</a>
+        <a href="terms-of-service.html">Terms</a>
+        <a href="cookie-policy.html">Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Sticky header shadow on scroll
+  const header = document.getElementById('siteHeader');
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 12);
+  }, { passive: true });
+
+  // Mobile nav toggle
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.getElementById('navLinks');
+  navToggle.addEventListener('click', () => {
+    const open = navLinks.classList.toggle('open');
+    navToggle.setAttribute('aria-expanded', open);
+  });
+  navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    navLinks.classList.remove('open');
+    navToggle.setAttribute('aria-expanded', 'false');
+  }));
+
+  // Scroll reveal
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const revealEls = document.querySelectorAll('.reveal');
+  if (reduceMotion) {
+    revealEls.forEach(el => el.classList.add('in'));
+  } else if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => io.observe(el));
+  } else {
+    revealEls.forEach(el => el.classList.add('in'));
+  }
+</script>
+</body>
+</html>
