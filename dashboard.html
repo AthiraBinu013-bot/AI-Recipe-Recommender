@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Rasoi AI — Smart Kitchen Assistant</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        cream: '#F4EDD8',
+        'cream-dark': '#EDE2C8',
+        basil: '#2E6B4A',
+        'basil-deep': '#16331F',
+        'basil-light': '#E1EBDA',
+        turmeric: '#E2872E',
+        'turmeric-deep': '#B5621A',
+        cobalt: '#2C6B8C',
+        'cobalt-light': '#DCEAF0',
+        ink: '#241F18',
+        'ink-soft': '#5A5248',
+        saffron: '#F59E0B',
+        rose: '#E05C7A',
+        'rose-light': '#FDE8ED',
+        mint: '#10B981',
+        'mint-light': '#D1FAE5',
+        violet: '#7C3AED',
+        'violet-light': '#EDE9FE',
+      },
+      fontFamily: {
+        display: ['Playfair Display', 'serif'],
+        body: ['Inter', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.4s ease-out',
+        'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+        'pop': 'pop 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
+        'bounce-in': 'bounceIn 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+        'shimmer': 'shimmer 1.5s ease-in-out infinite',
+        'wiggle': 'wiggle 0.5s ease-in-out',
+        'float': 'float 3s ease-in-out infinite',
+      },
+      keyframes: {
+        fadeIn: { '0%': { opacity: '0', transform: 'translateY(8px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px) scale(0.97)' }, '100%': { opacity: '1', transform: 'translateY(0) scale(1)' } },
+        pop: { '0%': { transform: 'scale(0.9)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } },
+        pulseSoft: { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0.7' } },
+        bounceIn: { '0%': { transform: 'scale(0.8)', opacity: '0' }, '60%': { transform: 'scale(1.05)' }, '100%': { transform: 'scale(1)', opacity: '1' } },
+        shimmer: { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
+        wiggle: { '0%, 100%': { transform: 'rotate(-3deg)' }, '50%': { transform: 'rotate(3deg)' } },
+        float: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-6px)' } },
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { background-color: #F4EDD8; font-family: 'Inter', sans-serif; color: #241F18; overflow-x: hidden; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #EDE2C8; }
+  ::-webkit-scrollbar-thumb { background: #2E6B4A; border-radius: 99px; }
+
+  .gradient-basil { background: linear-gradient(135deg, #2E6B4A 0%, #16331F 100%); }
+  .gradient-turmeric { background: linear-gradient(135deg, #E2872E 0%, #B5621A 100%); }
+  .gradient-cobalt { background: linear-gradient(135deg, #2C6B8C 0%, #1a4a63 100%); }
+  .gradient-rose { background: linear-gradient(135deg, #E05C7A 0%, #c0405e 100%); }
+  .gradient-violet { background: linear-gradient(135deg, #7C3AED 0%, #5b21b6 100%); }
+  .gradient-mint { background: linear-gradient(135deg, #10B981 0%, #059669 100%); }
+  .gradient-rainbow { background: linear-gradient(135deg, #2E6B4A, #2C6B8C, #7C3AED, #E05C7A, #E2872E); }
+
+  .glass-card { background: rgba(255,255,255,0.72); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.55); }
+  .glass-card-dark { background: rgba(22,51,31,0.88); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.10); }
+
+  .tag-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 99px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: 1.5px solid transparent; user-select: none; }
+  .tag-pill:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+  .tag-pill.active { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.18); }
+
+  .btn-primary { background: linear-gradient(135deg, #2E6B4A 0%, #16331F 100%); color: white; padding: 12px 28px; border-radius: 14px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.25s; border: none; outline: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 18px rgba(46,107,74,0.35); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(46,107,74,0.45); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-turmeric { background: linear-gradient(135deg, #E2872E 0%, #B5621A 100%); color: white; padding: 12px 28px; border-radius: 14px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.25s; border: none; outline: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 18px rgba(226,135,46,0.35); }
+  .btn-turmeric:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(226,135,46,0.45); }
+
+  .btn-cobalt { background: linear-gradient(135deg, #2C6B8C 0%, #1a4a63 100%); color: white; padding: 12px 28px; border-radius: 14px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.25s; border: none; outline: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 18px rgba(44,107,140,0.35); }
+  .btn-cobalt:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(44,107,140,0.45); }
+
+  .btn-rose { background: linear-gradient(135deg, #E05C7A 0%, #c0405e 100%); color: white; padding: 10px 20px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.25s; border: none; outline: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 16px rgba(224,92,122,0.3); }
+  .btn-rose:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(224,92,122,0.42); }
+
+  .recipe-card { background: white; border-radius: 22px; overflow: hidden; box-shadow: 0 4px 24px rgba(36,31,24,0.08); transition: all 0.35s cubic-bezier(0.16,1,0.3,1); border: 1.5px solid rgba(255,255,255,0.8); }
+  .recipe-card:hover { transform: translateY(-6px) scale(1.015); box-shadow: 0 18px 48px rgba(36,31,24,0.14); }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(22,33,20,0.55); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s ease-out; }
+  .modal-box { background: #FDFAF4; border-radius: 26px; max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 30px 80px rgba(0,0,0,0.25); animation: slideUp 0.45s cubic-bezier(0.16,1,0.3,1); }
+
+  .chatbot-widget { position: fixed; bottom: 28px; right: 28px; z-index: 900; }
+  .chatbot-bubble { background: white; border-radius: 22px; box-shadow: 0 12px 40px rgba(0,0,0,0.18); width: 360px; max-height: 520px; display: flex; flex-direction: column; overflow: hidden; animation: bounceIn 0.5s cubic-bezier(0.16,1,0.3,1); border: 1.5px solid rgba(46,107,74,0.15); }
+
+  .chat-msg-ai { background: linear-gradient(135deg, #E1EBDA, #d4e8ca); border-radius: 18px 18px 18px 4px; padding: 12px 16px; font-size: 14px; line-height: 1.5; color: #16331F; max-width: 85%; animation: slideUp 0.3s ease-out; }
+  .chat-msg-user { background: linear-gradient(135deg, #2E6B4A, #16331F); border-radius: 18px 18px 4px 18px; padding: 12px 16px; font-size: 14px; line-height: 1.5; color: white; max-width: 85%; margin-left: auto; animation: slideUp 0.3s ease-out; }
+
+  .slider-track { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 99px; background: linear-gradient(to right, #2E6B4A var(--val, 50%), #E1EBDA var(--val, 50%)); outline: none; cursor: pointer; }
+  .slider-track::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #E2872E, #B5621A); box-shadow: 0 2px 10px rgba(226,135,46,0.4); cursor: pointer; }
+
+  .toggle-switch { position: relative; width: 52px; height: 28px; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-knob { position: absolute; inset: 0; border-radius: 99px; background: #d6cdc0; cursor: pointer; transition: 0.3s; }
+  .toggle-knob::before { content:''; position: absolute; width: 22px; height: 22px; border-radius: 50%; background: white; left: 3px; top: 3px; transition: 0.3s; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+  .toggle-switch input:checked + .toggle-knob { background: linear-gradient(135deg, #2E6B4A, #16331F); }
+  .toggle-switch input:checked + .toggle-knob::before { transform: translateX(24px); }
+
+  .profile-dropdown { background: white; border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,0.16); width: 240px; overflow: hidden; animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1); border: 1px solid rgba(0,0,0,0.07); }
+
+  .stat-card { border-radius: 18px; padding: 18px 20px; transition: all 0.3s; cursor: default; }
+  .stat-card:hover { transform: translateY(-3px); }
+
+  .nav-tab { padding: 8px 18px; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; color: #5A5248; }
+  .nav-tab.active { background: linear-gradient(135deg, #2E6B4A, #16331F); color: white; box-shadow: 0 4px 14px rgba(46,107,74,0.3); }
+  .nav-tab:not(.active):hover { background: #E1EBDA; color: #16331F; }
+
+  .ingredient-chip { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: 2px solid; }
+
+  .diet-btn { padding: 10px 18px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.25s; border: 2px solid; text-align: center; }
+
+  @keyframes typing { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+  .typing-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #2E6B4A; animation: typing 1.2s ease-in-out infinite; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  .match-badge { background: linear-gradient(135deg, #10B981, #059669); color: white; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; box-shadow: 0 2px 8px rgba(16,185,129,0.35); }
+  .cost-badge { background: linear-gradient(135deg, #E2872E, #B5621A); color: white; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; }
+  .time-badge { background: linear-gradient(135deg, #2C6B8C, #1a4a63); color: white; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; }
+
+  .search-bar { background: white; border-radius: 14px; border: 2px solid transparent; transition: all 0.25s; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+  .search-bar:focus-within { border-color: #2E6B4A; box-shadow: 0 0 0 4px rgba(46,107,74,0.12); }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- ═══════════════════════════════════════════════════ TOP HEADER ═══ -->
+<header class="sticky top-0 z-50 px-6 py-3" style="background: rgba(244,237,216,0.92); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(46,107,74,0.12);">
+  <div class="max-w-[1440px] mx-auto flex items-center gap-4">
+    <!-- Logo -->
+    <div class="flex items-center gap-3 shrink-0">
+      <div class="w-10 h-10 gradient-basil rounded-14 flex items-center justify-center text-xl shadow-lg" style="border-radius:12px">🍛</div>
+      <div>
+        <div class="font-display font-900 text-base leading-tight" style="color:#16331F">Rasoi AI</div>
+        <div class="text-[10px] font-mono" style="color:#E2872E; letter-spacing:0.08em">SMART KITCHEN</div>
+      </div>
+    </div>
+
+    <!-- Nav Tabs -->
+    <nav class="hidden md:flex items-center gap-1 ml-4 p-1 rounded-16" style="background:#E1EBDA; border-radius:14px">
+      <button class="nav-tab active" onclick="switchNav(this,'dashboard')">🏠 Dashboard</button>
+      <button class="nav-tab" onclick="switchNav(this,'recipes')">📋 Recipes</button>
+      <button class="nav-tab" onclick="switchNav(this,'planner')">📅 Meal Plan</button>
+      <button class="nav-tab" onclick="switchNav(this,'nutrition')">💪 Nutrition</button>
+    </nav>
+
+    <!-- Search -->
+    <div class="flex-1 max-w-sm search-bar flex items-center gap-2 px-4 py-2.5">
+      <svg class="w-4 h-4 shrink-0" style="color:#5A5248" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <input type="text" placeholder="Search recipes, ingredients…" class="bg-transparent outline-none flex-1 text-sm" style="color:#241F18" id="globalSearch" oninput="handleSearch(this.value)"/>
+    </div>
+
+    <!-- Right Actions -->
+    <div class="flex items-center gap-3 ml-auto shrink-0">
+      <!-- Voice btn -->
+      <button id="voiceBtn" onclick="toggleVoice()" class="w-10 h-10 gradient-cobalt rounded-12 flex items-center justify-center text-white shadow-md transition-all hover:scale-110" style="border-radius:12px" title="Voice Assistant">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+      </button>
+      <!-- Notif btn -->
+      <button class="w-10 h-10 gradient-turmeric rounded-12 flex items-center justify-center text-white shadow-md transition-all hover:scale-110 relative" style="border-radius:12px">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        <span class="absolute -top-1 -right-1 w-4 h-4 gradient-rose text-white text-[10px] font-bold rounded-full flex items-center justify-center">3</span>
+      </button>
+      <!-- Profile -->
+      <div class="relative">
+        <button onclick="toggleProfile()" class="flex items-center gap-2.5 px-3 py-2 rounded-14 transition-all hover:scale-105" style="background:white; border-radius:14px; border:1.5px solid rgba(46,107,74,0.18); box-shadow:0 2px 10px rgba(0,0,0,0.07)">
+          <div class="w-8 h-8 gradient-basil rounded-full flex items-center justify-center text-white font-bold text-sm">A</div>
+          <div class="hidden sm:block text-left">
+            <div class="text-xs font-600 leading-tight" style="color:#241F18; font-weight:600">Chef Anagha</div>
+            <div class="text-[10px]" style="color:#2E6B4A">Student Mode ✓</div>
+          </div>
+          <svg class="w-4 h-4" style="color:#5A5248" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <!-- Dropdown -->
+        <div id="profileDropdown" class="profile-dropdown absolute right-0 top-14 hidden" style="z-index:200">
+          <div class="px-4 py-4 border-b" style="border-color:#F4EDD8">
+            <div class="w-12 h-12 gradient-rainbow rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-2">A</div>
+            <div class="text-center font-bold" style="color:#241F18">Chef Anagha</div>
+            <div class="text-xs text-center mt-1" style="color:#5A5248">anagha@college.edu</div>
+            <div class="mt-2 mx-auto w-fit px-3 py-1 rounded-99 text-xs font-600" style="background:#E1EBDA; color:#2E6B4A; border-radius:99px; font-weight:600">🎓 Student / Hosteller Mode Active</div>
+          </div>
+          <div class="p-2">
+            <button class="w-full text-left px-3 py-2.5 rounded-10 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2" style="border-radius:10px; color:#241F18">⚙️ Settings</button>
+            <button class="w-full text-left px-3 py-2.5 rounded-10 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2" style="border-radius:10px; color:#241F18">👤 Edit Profile</button>
+            <button class="w-full text-left px-3 py-2.5 rounded-10 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2" style="border-radius:10px; color:#241F18">📊 My Stats</button>
+          </div>
+          <div class="p-3 border-t" style="border-color:#F4EDD8">
+            <button onclick="window.location.href='index.html'" class="w-full btn-rose justify-center" style="font-size:13px; padding:9px 16px;">🚪 Log Out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════ MAIN LAYOUT ═══ -->
+<main class="max-w-[1440px] mx-auto px-6 py-6 flex gap-6">
+
+  <!-- ══════════════ SIDEBAR FILTERS ══════════════ -->
+  <aside class="w-80 shrink-0 space-y-4" id="sidebar">
+
+    <!-- Student Mode Card -->
+    <div class="glass-card rounded-22 p-5 relative overflow-hidden" style="border-radius:22px">
+      <div class="absolute inset-0 opacity-5 gradient-basil"></div>
+      <div class="relative flex items-center justify-between mb-3">
+        <div>
+          <div class="font-display font-bold text-base" style="color:#16331F">🎓 Student Mode</div>
+          <div class="text-xs mt-0.5" style="color:#5A5248">Budget-smart cooking</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="studentMode" onchange="applyStudentMode(this.checked)" checked/>
+          <span class="toggle-knob"></span>
+        </label>
+      </div>
+      <div id="studentModeInfo" class="flex gap-2 flex-wrap">
+        <span class="tag-pill active" style="background:#E1EBDA; color:#2E6B4A; border-color:#2E6B4A">⏱ Under 15 min</span>
+        <span class="tag-pill active" style="background:#FDE8ED; color:#E05C7A; border-color:#E05C7A">₹ Under ₹100</span>
+        <span class="tag-pill active" style="background:#DCEAF0; color:#2C6B8C; border-color:#2C6B8C">🍳 Minimal utensils</span>
+      </div>
+    </div>
+
+    <!-- Ingredients -->
+    <div class="glass-card rounded-22 p-5" style="border-radius:22px">
+      <div class="flex items-center justify-between mb-3">
+        <div class="font-display font-bold text-base" style="color:#16331F">🥗 Ingredients</div>
+        <button onclick="clearIngredients()" class="text-xs font-500 px-2.5 py-1 rounded-99" style="background:#FDE8ED; color:#E05C7A; border-radius:99px; font-weight:500">Clear all</button>
+      </div>
+      <div class="flex gap-2 mb-3 search-bar px-3 py-2">
+        <span>🔍</span>
+        <input id="ingredientInput" type="text" placeholder="Add ingredient…" class="bg-transparent outline-none text-sm flex-1" onkeydown="addIngredientOnEnter(event)"/>
+      </div>
+      <div id="ingredientChips" class="flex flex-wrap gap-2"></div>
+    </div>
+
+    <!-- Budget Slider -->
+    <div class="glass-card rounded-22 p-5" style="border-radius:22px">
+      <div class="font-display font-bold text-base mb-4" style="color:#16331F">💰 Budget per Meal</div>
+      <div class="flex gap-2 mb-4">
+        <button onclick="setBudgetPill(50)" class="diet-btn flex-1" id="pill50" style="background:linear-gradient(135deg,#E2872E,#B5621A);color:white;border-color:transparent">₹50</button>
+        <button onclick="setBudgetPill(100)" class="diet-btn flex-1" id="pill100" style="background:#F4EDD8;color:#5A5248;border-color:#d6cdc0">₹100</button>
+        <button onclick="setBudgetPill(200)" class="diet-btn flex-1" id="pill200" style="background:#F4EDD8;color:#5A5248;border-color:#d6cdc0">₹200</button>
+      </div>
+      <input type="range" min="10" max="300" value="50" class="slider-track w-full" id="budgetSlider" oninput="updateBudget(this.value)"/>
+      <div class="flex justify-between mt-2">
+        <span class="text-xs" style="color:#5A5248">₹10</span>
+        <span class="font-bold font-mono text-lg" style="color:#E2872E" id="budgetDisplay">₹50</span>
+        <span class="text-xs" style="color:#5A5248">₹300</span>
+      </div>
+    </div>
+
+    <!-- Dietary -->
+    <div class="glass-card rounded-22 p-5" style="border-radius:22px">
+      <div class="font-display font-bold text-base mb-3" style="color:#16331F">🍽 Dietary Preference</div>
+      <div class="grid grid-cols-2 gap-2" id="dietButtons">
+        <button class="diet-btn" onclick="setDiet('veg')" id="diet-veg" style="background:linear-gradient(135deg,#2E6B4A,#16331F);color:white;border-color:transparent">🥦 Veg</button>
+        <button class="diet-btn" onclick="setDiet('nonveg')" id="diet-nonveg" style="background:#F4EDD8;color:#5A5248;border-color:#d6cdc0">🍗 Non-Veg</button>
+        <button class="diet-btn" onclick="setDiet('vegan')" id="diet-vegan" style="background:#F4EDD8;color:#5A5248;border-color:#d6cdc0">🌱 Vegan</button>
+        <button class="diet-btn" onclick="setDiet('glutenfree')" id="diet-glutenfree" style="background:#F4EDD8;color:#5A5248;border-color:#d6cdc0">🌾 Gluten-Free</button>
+      </div>
+    </div>
+
+    <!-- Nutrition Goals -->
+    <div class="glass-card rounded-22 p-5" style="border-radius:22px">
+      <div class="font-display font-bold text-base mb-4" style="color:#16331F">💪 Nutrition Goals</div>
+      <div class="space-y-4">
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span style="color:#5A5248">🔥 Calories</span>
+            <span class="font-mono font-bold" style="color:#E2872E" id="calLabel">500 kcal</span>
+          </div>
+          <input type="range" min="200" max="1000" value="500" class="slider-track w-full" oninput="document.getElementById('calLabel').textContent=this.value+' kcal'; updateSliderFill(this)"/>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span style="color:#5A5248">🥩 Protein</span>
+            <span class="font-mono font-bold" style="color:#2C6B8C" id="protLabel">20g</span>
+          </div>
+          <input type="range" min="5" max="60" value="20" class="slider-track w-full" style="--val:33%" oninput="document.getElementById('protLabel').textContent=this.value+'g'; updateSliderFill(this)"/>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span style="color:#5A5248">🌾 Carbs</span>
+            <span class="font-mono font-bold" style="color:#7C3AED" id="carbLabel">60g</span>
+          </div>
+          <input type="range" min="10" max="150" value="60" class="slider-track w-full" oninput="document.getElementById('carbLabel').textContent=this.value+'g'; updateSliderFill(this)"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generate Button -->
+    <button onclick="generateRecipes()" class="btn-primary w-full justify-center text-base py-4 animate-pulse-soft" style="border-radius:18px; font-size:16px">
+      ✨ Generate 3 Best Recipes
+    </button>
+
+  </aside>
+
+  <!-- ══════════════ MAIN CONTENT ══════════════ -->
+  <div class="flex-1 min-w-0 space-y-6">
+
+    <!-- Stat Strip -->
+    <div class="grid grid-cols-4 gap-4">
+      <div class="stat-card glass-card">
+        <div class="text-2xl mb-1">🥘</div>
+        <div class="font-display font-bold text-2xl" style="color:#2E6B4A">247</div>
+        <div class="text-xs mt-1" style="color:#5A5248">Recipes Available</div>
+        <div class="text-xs mt-1 font-500" style="color:#10B981">↑ 12 new today</div>
+      </div>
+      <div class="stat-card glass-card">
+        <div class="text-2xl mb-1">⏱</div>
+        <div class="font-display font-bold text-2xl" style="color:#E2872E">12</div>
+        <div class="text-xs mt-1" style="color:#5A5248">Avg Cook Time</div>
+        <div class="text-xs mt-1 font-500" style="color:#E2872E">mins per meal</div>
+      </div>
+      <div class="stat-card glass-card">
+        <div class="text-2xl mb-1">💰</div>
+        <div class="font-display font-bold text-2xl" style="color:#2C6B8C">₹68</div>
+        <div class="text-xs mt-1" style="color:#5A5248">Avg Cost/Meal</div>
+        <div class="text-xs mt-1 font-500" style="color:#10B981">↓ saved ₹320 this week</div>
+      </div>
+      <div class="stat-card glass-card">
+        <div class="text-2xl mb-1">🔥</div>
+        <div class="font-display font-bold text-2xl" style="color:#7C3AED">14</div>
+        <div class="text-xs mt-1" style="color:#5A5248">Day Streak</div>
+        <div class="text-xs mt-1 font-500" style="color:#7C3AED">Keep cooking! 🏆</div>
+      </div>
+    </div>
+
+    <!-- Quick Prompt Chips -->
+    <div class="glass-card rounded-22 p-5" style="border-radius:22px">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="font-display font-bold" style="color:#16331F">⚡ Quick Filters</div>
+        <div class="flex-1 h-px" style="background:linear-gradient(to right, #E1EBDA, transparent)"></div>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button class="tag-pill active" style="background:linear-gradient(135deg,#2E6B4A,#16331F);color:white;border-color:transparent" onclick="quickFilter(this,'under100')">💚 Under ₹100</button>
+        <button class="tag-pill" style="background:#EDE9FE;color:#7C3AED;border-color:#7C3AED" onclick="quickFilter(this,'under15')">⚡ Under 15 mins</button>
+        <button class="tag-pill" style="background:#DCEAF0;color:#2C6B8C;border-color:#2C6B8C" onclick="quickFilter(this,'highprotein')">💪 High Protein</button>
+        <button class="tag-pill" style="background:#FDE8ED;color:#E05C7A;border-color:#E05C7A" onclick="quickFilter(this,'fiveing')">🧅 5 Ingredients</button>
+        <button class="tag-pill" style="background:#D1FAE5;color:#059669;border-color:#059669" onclick="quickFilter(this,'onevessel')">🥣 One Vessel</button>
+        <button class="tag-pill" style="background:linear-gradient(135deg,#F59E0B20,#F59E0B10);color:#92400E;border-color:#F59E0B" onclick="quickFilter(this,'nodairy')">🌱 No Dairy</button>
+        <button class="tag-pill" style="background:#F4EDD8;color:#5A5248;border-color:#d6cdc0" onclick="quickFilter(this,'breakfast')">☀️ Breakfast Ideas</button>
+        <button class="tag-pill" style="background:#F4EDD8;color:#5A5248;border-color:#d6cdc0" onclick="quickFilter(this,'latenight')">🌙 Late Night</button>
+      </div>
+    </div>
+
+    <!-- Recipe Grid -->
+    <div>
+      <div class="flex items-center justify-between mb-4">
+        <div class="font-display font-bold text-xl" style="color:#16331F">🍳 Recommended for You</div>
+        <div class="flex gap-2">
+          <button onclick="sortRecipes('match')" class="tag-pill" style="background:#E1EBDA;color:#2E6B4A;border-color:#2E6B4A;font-size:12px" id="sort-match">📊 Best Match</button>
+          <button onclick="sortRecipes('cost')" class="tag-pill" style="background:#F4EDD8;color:#5A5248;border-color:#d6cdc0;font-size:12px" id="sort-cost">💰 Cheapest</button>
+          <button onclick="sortRecipes('time')" class="tag-pill" style="background:#F4EDD8;color:#5A5248;border-color:#d6cdc0;font-size:12px" id="sort-time">⚡ Fastest</button>
+        </div>
+      </div>
+      <div id="recipeGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <!-- Injected by JS -->
+      </div>
+      <div id="loadingRecipes" class="hidden text-center py-16">
+        <div class="text-5xl mb-4 animate-float">🍛</div>
+        <div class="font-display font-bold text-xl mb-2" style="color:#2E6B4A">Cooking up recommendations…</div>
+        <div class="flex gap-2 justify-center mt-4">
+          <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly Planner Preview -->
+    <div class="glass-card rounded-22 p-5" style="border-radius:22px">
+      <div class="flex items-center justify-between mb-4">
+        <div class="font-display font-bold text-lg" style="color:#16331F">📅 This Week's Meal Plan</div>
+        <button class="btn-cobalt" style="padding:8px 18px; font-size:13px; border-radius:12px">+ Plan Meals</button>
+      </div>
+      <div class="grid grid-cols-7 gap-2" id="weekPlanner">
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ═══════════════════════════════════════════════ CHATBOT WIDGET ═══ -->
+<div class="chatbot-widget">
+  <!-- FAB -->
+  <div id="chatFab" onclick="toggleChat()" class="w-16 h-16 gradient-basil rounded-full flex items-center justify-center shadow-2xl cursor-pointer transition-all hover:scale-110 animate-float relative" style="box-shadow:0 8px 32px rgba(46,107,74,0.45)">
+    <span class="text-2xl" id="chatIcon">🤖</span>
+    <span class="absolute -top-1 -right-1 w-5 h-5 gradient-turmeric text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse-soft" id="chatBadge">1</span>
+  </div>
+  <!-- Chat Bubble -->
+  <div id="chatBubble" class="chatbot-bubble mb-4 hidden" style="position:absolute;bottom:76px;right:0">
+    <!-- Header -->
+    <div class="gradient-basil px-4 py-3.5 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-lg">🤖</div>
+        <div>
+          <div class="text-white font-bold text-sm">Rasoi AI Copilot</div>
+          <div class="text-xs flex items-center gap-1" style="color:#a8d5b5">
+            <span class="w-1.5 h-1.5 bg-green-400 rounded-full inline-block"></span> Online • Awaiting orders
+          </div>
+        </div>
+      </div>
+      <button onclick="toggleChat()" class="text-white opacity-70 hover:opacity-100 text-xl leading-none">&times;</button>
+    </div>
+    <!-- Messages -->
+    <div id="chatMessages" class="flex-1 p-4 space-y-3 overflow-y-auto" style="height:280px; background:#FDFAF4"></div>
+    <!-- Chips -->
+    <div class="px-4 py-2 flex gap-2 overflow-x-auto" style="background:#F4EDD8; border-top:1px solid #E1EBDA">
+      <button class="tag-pill shrink-0" style="background:white;color:#2E6B4A;border-color:#2E6B4A;font-size:12px" onclick="sendChip('Under ₹100 meals')">💚 Under ₹100</button>
+      <button class="tag-pill shrink-0" style="background:white;color:#E2872E;border-color:#E2872E;font-size:12px" onclick="sendChip('Quick dinner ideas')">⚡ Quick Dinner</button>
+      <button class="tag-pill shrink-0" style="background:white;color:#2C6B8C;border-color:#2C6B8C;font-size:12px" onclick="sendChip('Paneer recipes')">🧀 Paneer</button>
+      <button class="tag-pill shrink-0" style="background:white;color:#7C3AED;border-color:#7C3AED;font-size:12px" onclick="sendChip('High protein veg')">💪 High Protein</button>
+    </div>
+    <!-- Input -->
+    <div class="p-3 flex gap-2" style="background:white; border-top:1px solid #F4EDD8">
+      <input id="chatInput" type="text" placeholder="Ask anything…" class="flex-1 text-sm outline-none px-3 py-2 rounded-12" style="background:#F4EDD8; border-radius:12px; color:#241F18" onkeydown="if(event.key==='Enter')sendChat()"/>
+      <button onclick="sendChat()" class="btn-primary" style="padding:10px 16px; border-radius:12px; font-size:13px">Send ↗</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ RECIPE MODAL ═══ -->
+<div id="recipeModal" class="modal-overlay hidden" onclick="closeModal(event)">
+  <div class="modal-box" id="modalBox" onclick="event.stopPropagation()">
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════ DATA LAYER ══════════════════════
+
+const RECIPES = [
+  {
+    id:1, name:'Paneer Butter Masala', emoji:'🧀',
+    image:'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=600&q=80',
+    match:96, cost:85, time:20, diet:'veg', tags:['paneer','tomato','onion'],
+    desc:'Creamy, restaurant-style paneer in a rich tomato-butter gravy. A hostel classic!',
+    calories:420, protein:18, carbs:38,
+    ingredients:['200g Paneer','2 Tomatoes','1 Onion','2 tbsp Butter','½ cup Milk','Spices'],
+    steps:['Cube paneer and lightly fry until golden.','Blend boiled tomatoes & onion into a smooth paste.','Melt butter in a pan, add the paste and spices.','Simmer 5 mins, add milk for creaminess.','Add paneer cubes, cook 3 mins. Done!']
+  },
+  {
+    id:2, name:'Malabar Egg Roast', emoji:'🥚',
+    image:'https://images.unsplash.com/photo-1602253057119-44d745d9b860?w=600&q=80',
+    match:91, cost:55, time:12, diet:'nonveg', tags:['eggs','onion','tomato'],
+    desc:'Kerala-style spiced egg masala. Bold flavours, dead easy, under ₹60!',
+    calories:290, protein:22, carbs:14,
+    ingredients:['3 Eggs','2 Onions','1 Tomato','Coconut oil','Kerala spice blend'],
+    steps:['Hard-boil eggs, peel and score them.','Fry sliced onions golden in coconut oil.','Add tomato and cook until mushy.','Add spices, fry 2 min.','Add eggs, coat well. Serve hot!']
+  },
+  {
+    id:3, name:'Spicy Tomato Egg Rice', emoji:'🍳',
+    image:'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600&q=80',
+    match:88, cost:45, time:10, diet:'nonveg', tags:['rice','eggs','tomato'],
+    desc:'One-pan fried rice meets spicy tomato. The ultimate 10-minute hostel hack.',
+    calories:380, protein:16, carbs:62,
+    ingredients:['1 cup Cooked Rice','2 Eggs','2 Tomatoes','Green chilis','Soy sauce'],
+    steps:['Heat oil, scramble eggs lightly.','Add chopped tomatoes & green chilis.','Push aside, add cooked rice.','Mix everything, splash soy sauce.','High heat 2 min. Serve immediately!']
+  },
+  {
+    id:4, name:'Quick Cabbage Thoran', emoji:'🥬',
+    image:'https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80',
+    match:84, cost:35, time:8, diet:'vegan', tags:['cabbage','tomato'],
+    desc:'Classic Kerala stir-fry with coconut. Nutritious, fast, and only ₹35.',
+    calories:180, protein:6, carbs:20,
+    ingredients:['½ Cabbage (shredded)','Grated Coconut','Mustard seeds','Curry leaves','Turmeric'],
+    steps:['Heat oil, splutter mustard & curry leaves.','Add shredded cabbage, salt, turmeric.','Stir-fry on high 4 minutes.','Add grated coconut, mix well.','Cook 1 more min. Ready!']
+  },
+  {
+    id:5, name:'Aloo Jeera', emoji:'🥔',
+    image:'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&q=80',
+    match:79, cost:40, time:15, diet:'veg', tags:['potatoes','onion'],
+    desc:'Simple roasted potatoes with cumin. Never fails, always satisfying.',
+    calories:260, protein:5, carbs:50,
+    ingredients:['3 Potatoes','1 tsp Cumin','Turmeric','Green chili','Coriander'],
+    steps:['Cube and parboil potatoes 5 min.','Heat oil, add cumin till it splutters.','Add potatoes and spices.','Fry on medium 8 mins until crispy.','Garnish coriander. Done!']
+  },
+  {
+    id:6, name:'Onion Tomato Rice', emoji:'🍚',
+    image:'https://images.unsplash.com/photo-1596797038530-2c107229654b?w=600&q=80',
+    match:76, cost:30, time:12, diet:'vegan', tags:['rice','onion','tomato'],
+    desc:'Flavourful one-pot rice. The cheapest meal on this list at just ₹30!',
+    calories:340, protein:7, carbs:68,
+    ingredients:['1 cup Rice','1 Onion','2 Tomatoes','Bay leaf','Whole spices'],
+    steps:['Rinse rice and soak 10 min.','Fry onion till brown, add whole spices.','Add tomatoes, cook mushy.','Add rice + 2 cups water.','Pressure cook 2 whistles. Serve!']
+  }
+];
+
+const INGREDIENTS_DEFAULT = ['Tomato','Onion','Cabbage','Eggs','Paneer','Rice','Potatoes','Green Chilis'];
+let activeIngredients = [...INGREDIENTS_DEFAULT];
+let currentBudget = 50;
+let currentDiet = 'veg';
+let studentMode = true;
+let activeFilters = new Set(['under100']);
+let currentRecipes = [...RECIPES];
+
+// ══════════════════════════════════ INGREDIENTS ENGINE ══════════════
+
+const chipColors = [
+  {bg:'#E1EBDA',text:'#16331F',border:'#2E6B4A'},
+  {bg:'#DCEAF0',text:'#1a4a63',border:'#2C6B8C'},
+  {bg:'#EDE9FE',text:'#5b21b6',border:'#7C3AED'},
+  {bg:'#D1FAE5',text:'#065f46',border:'#10B981'},
+  {bg:'#FDE8ED',text:'#9f1239',border:'#E05C7A'},
+  {bg:'#FEF3C7',text:'#92400e',border:'#F59E0B'},
+];
+
+function renderIngredients() {
+  const container = document.getElementById('ingredientChips');
+  container.innerHTML = '';
+  activeIngredients.forEach((ing, i) => {
+    const c = chipColors[i % chipColors.length];
+    const chip = document.createElement('button');
+    chip.className = 'ingredient-chip animate-fade-in';
+    chip.style.cssText = `background:${c.bg};color:${c.text};border-color:${c.border}`;
+    chip.innerHTML = `${ing} <span onclick="removeIngredient('${ing}')" style="opacity:0.6;margin-left:2px;font-size:16px;line-height:1">&times;</span>`;
+    container.appendChild(chip);
+  });
+}
+
+function addIngredientOnEnter(e) {
+  if (e.key === 'Enter') {
+    const v = e.target.value.trim();
+    if (v && !activeIngredients.includes(v)) {
+      activeIngredients.push(v);
+      renderIngredients();
+    }
+    e.target.value = '';
+  }
+}
+
+function removeIngredient(name) {
+  activeIngredients = activeIngredients.filter(i => i !== name);
+  renderIngredients();
+}
+
+function clearIngredients() {
+  activeIngredients = [];
+  renderIngredients();
+}
+
+// ══════════════════════════════════ BUDGET ══════════════════════════
+
+function updateBudget(val) {
+  currentBudget = parseInt(val);
+  document.getElementById('budgetDisplay').textContent = '₹' + val;
+  updateSliderFill(document.getElementById('budgetSlider'));
+  ['50','100','200'].forEach(v => {
+    const btn = document.getElementById('pill'+v);
+    if (parseInt(v) === currentBudget) {
+      btn.style.cssText = 'background:linear-gradient(135deg,#E2872E,#B5621A);color:white;border-color:transparent';
+    } else {
+      btn.style.cssText = 'background:#F4EDD8;color:#5A5248;border-color:#d6cdc0';
+    }
+  });
+}
+
+function setBudgetPill(val) {
+  currentBudget = val;
+  document.getElementById('budgetSlider').value = val;
+  document.getElementById('budgetDisplay').textContent = '₹' + val;
+  updateSliderFill(document.getElementById('budgetSlider'));
+  updateBudget(val);
+}
+
+function updateSliderFill(slider) {
+  const min = slider.min || 0, max = slider.max || 100, val = slider.value;
+  const pct = ((val - min) / (max - min)) * 100;
+  slider.style.setProperty('--val', pct + '%');
+}
+
+// ══════════════════════════════════ DIET SELECTOR ══════════════════
+
+function setDiet(diet) {
+  currentDiet = diet;
+  const map = {
+    veg: 'background:linear-gradient(135deg,#2E6B4A,#16331F);color:white;border-color:transparent',
+    nonveg: 'background:linear-gradient(135deg,#E05C7A,#c0405e);color:white;border-color:transparent',
+    vegan: 'background:linear-gradient(135deg,#10B981,#059669);color:white;border-color:transparent',
+    glutenfree: 'background:linear-gradient(135deg,#E2872E,#B5621A);color:white;border-color:transparent',
+  };
+  Object.keys(map).forEach(k => {
+    const btn = document.getElementById('diet-' + k);
+    if (k === diet) {
+      btn.style.cssText = map[k];
+    } else {
+      btn.style.cssText = 'background:#F4EDD8;color:#5A5248;border-color:#d6cdc0';
+    }
+  });
+}
+
+// ══════════════════════════════════ STUDENT MODE ====================
+
+function applyStudentMode(on) {
+  studentMode = on;
+  const info = document.getElementById('studentModeInfo');
+  if (on) {
+    setBudgetPill(100);
+    info.style.opacity = '1';
+  } else {
+    info.style.opacity = '0.4';
+  }
+}
+
+// ══════════════════════════════════ QUICK FILTERS ══════════════════
+
+function quickFilter(btn, key) {
+  if (activeFilters.has(key)) {
+    activeFilters.delete(key);
+    btn.classList.remove('active');
+    btn.style.background = '#F4EDD8'; btn.style.color = '#5A5248'; btn.style.borderColor = '#d6cdc0';
+  } else {
+    activeFilters.add(key);
+    btn.classList.add('active');
+  }
+}
+
+// ══════════════════════════════════ RECIPE GENERATION ==============
+
+function generateRecipes() {
+  const grid = document.getElementById('recipeGrid');
+  const loader = document.getElementById('loadingRecipes');
+  grid.style.opacity = '0';
+  grid.style.transition = 'opacity 0.3s';
+  loader.classList.remove('hidden');
+  setTimeout(() => {
+    loader.classList.add('hidden');
+    filterAndRender();
+    grid.style.opacity = '1';
+  }, 1200);
+}
+
+function filterAndRender() {
+  let filtered = RECIPES.filter(r => {
+    if (activeFilters.has('under100') && r.cost > 100) return false;
+    if (activeFilters.has('under15') && r.time > 15) return false;
+    if (activeFilters.has('highprotein') && r.protein < 18) return false;
+    if (currentDiet === 'veg' && r.diet === 'nonveg') return false;
+    if (currentDiet === 'vegan' && r.diet !== 'vegan') return false;
+    if (r.cost > currentBudget && currentBudget < 300) return false;
+    return true;
+  });
+  if (filtered.length === 0) filtered = RECIPES.slice(0, 3);
+  currentRecipes = filtered;
+  renderGrid(filtered);
+}
+
+function renderGrid(recipes) {
+  const grid = document.getElementById('recipeGrid');
+  grid.innerHTML = '';
+  recipes.forEach((r, i) => {
+    const card = document.createElement('div');
+    card.className = 'recipe-card animate-slide-up';
+    card.style.animationDelay = (i * 0.08) + 's';
+    card.innerHTML = `
+      <div class="relative overflow-hidden" style="height:190px">
+        <img src="${r.image}" alt="${r.name}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"/>
+        <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(22,51,31,0.6) 0%, transparent 60%)"></div>
+        <div class="absolute top-3 left-3 flex gap-2">
+          <span class="match-badge">✦ ${r.match}% Match</span>
+        </div>
+        <div class="absolute bottom-3 left-3 right-3 flex gap-1.5 flex-wrap">
+          <span class="cost-badge">₹${r.cost}</span>
+          <span class="time-badge">⏱ ${r.time} min</span>
+          <span class="match-badge" style="background:linear-gradient(135deg,#7C3AED,#5b21b6)">${r.diet === 'veg' ? '🥦 Veg' : r.diet === 'vegan' ? '🌱 Vegan' : '🍗 Non-Veg'}</span>
+        </div>
+      </div>
+      <div class="p-4">
+        <div class="flex items-start gap-2 mb-1">
+          <span class="text-2xl">${r.emoji}</span>
+          <div>
+            <div class="font-display font-bold text-base leading-tight" style="color:#241F18">${r.name}</div>
+            <div class="text-xs mt-0.5" style="color:#5A5248">${r.desc}</div>
+          </div>
+        </div>
+        <div class="flex gap-3 mt-3 mb-4 text-xs">
+          <div class="flex-1 text-center py-2 rounded-10" style="background:#E1EBDA; border-radius:10px">
+            <div class="font-bold" style="color:#2E6B4A">${r.calories}</div>
+            <div style="color:#5A5248">kcal</div>
+          </div>
+          <div class="flex-1 text-center py-2 rounded-10" style="background:#DCEAF0; border-radius:10px">
+            <div class="font-bold" style="color:#2C6B8C">${r.protein}g</div>
+            <div style="color:#5A5248">protein</div>
+          </div>
+          <div class="flex-1 text-center py-2 rounded-10" style="background:#EDE9FE; border-radius:10px">
+            <div class="font-bold" style="color:#7C3AED">${r.carbs}g</div>
+            <div style="color:#5A5248">carbs</div>
+          </div>
+        </div>
+        <button onclick="openModal(${r.id})" class="btn-primary w-full justify-center" style="padding:10px; border-radius:12px; font-size:14px">
+          📖 View Recipe Details
+        </button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ══════════════════════════════════ SORTING ═══════════════════════
+
+function sortRecipes(by) {
+  ['match','cost','time'].forEach(k => {
+    const btn = document.getElementById('sort-'+k);
+    btn.classList.remove('active');
+    btn.style.background = '#F4EDD8'; btn.style.color = '#5A5248'; btn.style.borderColor = '#d6cdc0';
+  });
+  const active = document.getElementById('sort-'+by);
+  active.style.background = 'linear-gradient(135deg,#2E6B4A,#16331F)';
+  active.style.color = 'white'; active.style.borderColor = 'transparent';
+
+  const sorted = [...currentRecipes].sort((a,b) => {
+    if (by === 'match') return b.match - a.match;
+    if (by === 'cost') return a.cost - b.cost;
+    if (by === 'time') return a.time - b.time;
+  });
+  renderGrid(sorted);
+}
+
+// ══════════════════════════════════ RECIPE MODAL ═══════════════════
+
+function openModal(id) {
+  const r = RECIPES.find(x => x.id === id);
+  if (!r) return;
+  const modal = document.getElementById('recipeModal');
+  const content = document.getElementById('modalContent');
+
+  content.innerHTML = `
+    <div class="relative overflow-hidden" style="height:220px; border-radius:26px 26px 0 0">
+      <img src="${r.image}" alt="${r.name}" class="w-full h-full object-cover"/>
+      <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(22,51,31,0.8) 0%, transparent 55%)"></div>
+      <button onclick="closeModalDirect()" class="absolute top-4 right-4 w-9 h-9 bg-white bg-opacity-20 backdrop-blur rounded-full flex items-center justify-center text-white text-xl hover:bg-opacity-40 transition-all">&times;</button>
+      <div class="absolute bottom-4 left-5 right-5">
+        <div class="flex gap-2 mb-2">
+          <span class="match-badge">✦ ${r.match}% Match</span>
+          <span class="cost-badge">₹${r.cost}</span>
+          <span class="time-badge">⏱ ${r.time} min</span>
+        </div>
+        <div class="text-white font-display font-bold text-2xl">${r.emoji} ${r.name}</div>
+      </div>
+    </div>
+    <div class="p-6 space-y-5">
+      <p class="text-sm" style="color:#5A5248">${r.desc}</p>
+      <!-- Nutrition Strip -->
+      <div class="grid grid-cols-3 gap-3">
+        <div class="text-center py-3 rounded-14" style="background:linear-gradient(135deg,#E1EBDA,#c8e0bc); border-radius:14px">
+          <div class="font-display font-bold text-xl" style="color:#2E6B4A">${r.calories}</div>
+          <div class="text-xs mt-0.5" style="color:#5A5248">🔥 Calories</div>
+        </div>
+        <div class="text-center py-3 rounded-14" style="background:linear-gradient(135deg,#DCEAF0,#b8d5e5); border-radius:14px">
+          <div class="font-display font-bold text-xl" style="color:#2C6B8C">${r.protein}g</div>
+          <div class="text-xs mt-0.5" style="color:#5A5248">💪 Protein</div>
+        </div>
+        <div class="text-center py-3 rounded-14" style="background:linear-gradient(135deg,#EDE9FE,#d4c8fc); border-radius:14px">
+          <div class="font-display font-bold text-xl" style="color:#7C3AED">${r.carbs}g</div>
+          <div class="text-xs mt-0.5" style="color:#5A5248">🌾 Carbs</div>
+        </div>
+      </div>
+      <!-- Ingredients -->
+      <div>
+        <div class="font-bold mb-3" style="color:#16331F">🛒 What You Need</div>
+        <div class="flex flex-wrap gap-2">
+          ${r.ingredients.map((ing,i) => `<span class="tag-pill" style="background:${chipColors[i%chipColors.length].bg};color:${chipColors[i%chipColors.length].text};border-color:${chipColors[i%chipColors.length].border}">${ing}</span>`).join('')}
+        </div>
+      </div>
+      <!-- Steps -->
+      <div>
+        <div class="font-bold mb-3" style="color:#16331F">👩‍🍳 How to Cook (Beginner-Friendly)</div>
+        <div class="space-y-3">
+          ${r.steps.map((step, i) => `
+            <div class="flex gap-3 items-start animate-fade-in" style="animation-delay:${i*0.08}s">
+              <div class="w-7 h-7 shrink-0 flex items-center justify-center font-bold text-sm text-white rounded-full" style="background:linear-gradient(135deg,#E2872E,#B5621A); border-radius:50%">${i+1}</div>
+              <div class="text-sm pt-0.5" style="color:#241F18; line-height:1.6">${step}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <!-- CTA -->
+      <div class="flex gap-3 pt-2">
+        <button onclick="closeModalDirect()" class="btn-primary flex-1 justify-center">✅ Got it, Let's Cook!</button>
+        <button onclick="sendChip('${r.name} tips'); closeModalDirect(); openChat();" class="btn-cobalt flex-1 justify-center">🤖 Ask Rasoi AI</button>
+      </div>
+    </div>
+  `;
+  modal.classList.remove('hidden');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('recipeModal')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('recipeModal').classList.add('hidden');
+}
+
+// ══════════════════════════════════ CHATBOT ════════════════════════
+
+let chatOpen = false;
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  const bubble = document.getElementById('chatBubble');
+  const badge = document.getElementById('chatBadge');
+  if (chatOpen) {
+    bubble.classList.remove('hidden');
+    badge.style.display = 'none';
+    if (document.getElementById('chatMessages').children.length === 0) {
+      setTimeout(() => addAIMessage("Hi Anagha! 👋 I'm your Rasoi AI kitchen copilot. Tell me what's on your kitchen counter, or say 'Under ₹100 meals'! 🍛"), 300);
+    }
+  } else {
+    bubble.classList.add('hidden');
+  }
+}
+
+function openChat() {
+  chatOpen = false;
+  toggleChat();
+}
+
+const AI_RESPONSES = {
+  paneer: "Great choice! 🧀 Paneer is super versatile. Try **Paneer Butter Masala** (₹85, 20 min) or a quick Paneer Bhurji for ₹60. Want the recipe?",
+  tomato: "Tomato + eggs = magic! 🍳 Spicy Tomato Egg Rice is only ₹45 and ready in 10 minutes. Perfect for late night!",
+  egg: "Eggs are a hostelite's best friend! 🥚 Try Malabar Egg Roast (₹55, 12 min) — bold Kerala flavours with minimal effort!",
+  rice: "Rice dishes are your cheapest bet! 🍚 Onion Tomato Rice is just ₹30 and takes 12 mins. I also know 15+ other rice recipes!",
+  quick: "For speed, my top picks: 1️⃣ Cabbage Thoran (8 min, ₹35) 2️⃣ Spicy Tomato Egg Rice (10 min, ₹45) 3️⃣ Malabar Egg Roast (12 min, ₹55)",
+  under100: "Budget meals under ₹100 🟢: Cabbage Thoran ₹35 | Onion Tomato Rice ₹30 | Egg Rice ₹45 | Malabar Egg Roast ₹55 | Aloo Jeera ₹40. All quick!",
+  dinner: "For dinner, I'd suggest Paneer Butter Masala or Malabar Egg Roast 🌙 — both filling, flavourful, and made for tired hostelites. Want step-by-step?",
+  protein: "Top protein picks 💪: Malabar Egg Roast (22g protein), Paneer Butter Masala (18g), Egg Rice (16g). Eggs & paneer are your best protein sources!",
+  cheap: "Cheapest meals in your pantry: Onion Tomato Rice ₹30 → Cabbage Thoran ₹35 → Aloo Jeera ₹40 → Egg Rice ₹45 🟢 All under ₹50!",
+  hello: "Hello Chef Anagha! 👩‍🍳 Ready to cook something amazing? Tell me what ingredients you have or what budget you're working with!",
+  tips: "Pro hostel cooking tips 💡: 1. Always keep onion, tomato, and eggs stocked. 2. A pressure cooker cuts time by 60%. 3. Pre-chop veggies on Sunday!",
+  default: "Hmm, let me think... 🤔 Try typing an ingredient like 'paneer' or 'eggs', or ask for 'quick dinner' or 'under ₹100 meals'. I'm here to help! 🍛"
+};
+
+function getAIReply(msg) {
+  const m = msg.toLowerCase();
+  if (m.includes('hello') || m.includes('hi')) return AI_RESPONSES.hello;
+  if (m.includes('paneer')) return AI_RESPONSES.paneer;
+  if (m.includes('tomato')) return AI_RESPONSES.tomato;
+  if (m.includes('egg')) return AI_RESPONSES.egg;
+  if (m.includes('rice')) return AI_RESPONSES.rice;
+  if (m.includes('quick') || m.includes('fast')) return AI_RESPONSES.quick;
+  if (m.includes('₹100') || m.includes('100') || m.includes('budget') || m.includes('cheap')) return AI_RESPONSES.under100;
+  if (m.includes('dinner')) return AI_RESPONSES.dinner;
+  if (m.includes('protein')) return AI_RESPONSES.protein;
+  if (m.includes('cheap') || m.includes('cheapest')) return AI_RESPONSES.cheap;
+  if (m.includes('tip')) return AI_RESPONSES.tips;
+  return AI_RESPONSES.default;
+}
+
+function addAIMessage(text) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'flex gap-2 items-end';
+  div.innerHTML = `
+    <div class="w-7 h-7 gradient-basil rounded-full flex items-center justify-center text-sm shrink-0">🤖</div>
+    <div class="chat-msg-ai">${text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>
+  `;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addUserMessage(text) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'flex justify-end';
+  div.innerHTML = `<div class="chat-msg-user">${text}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'flex gap-2 items-end'; div.id = 'typingIndicator';
+  div.innerHTML = `
+    <div class="w-7 h-7 gradient-basil rounded-full flex items-center justify-center text-sm shrink-0">🤖</div>
+    <div class="chat-msg-ai" style="padding:14px 16px">
+      <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+    </div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  addUserMessage(text);
+  input.value = '';
+  showTyping();
+  setTimeout(() => {
+    const ti = document.getElementById('typingIndicator');
+    if (ti) ti.remove();
+    addAIMessage(getAIReply(text));
+  }, 900);
+}
+
+function sendChip(text) {
+  if (!chatOpen) openChat();
+  setTimeout(() => {
+    addUserMessage(text);
+    showTyping();
+    setTimeout(() => {
+      const ti = document.getElementById('typingIndicator');
+      if (ti) ti.remove();
+      addAIMessage(getAIReply(text));
+    }, 900);
+  }, 350);
+}
+
+// ══════════════════════════════════ PROFILE DROPDOWN ══════════════
+
+function toggleProfile() {
+  const dd = document.getElementById('profileDropdown');
+  dd.classList.toggle('hidden');
+}
+document.addEventListener('click', (e) => {
+  const dd = document.getElementById('profileDropdown');
+  if (!dd.contains(e.target) && !e.target.closest('[onclick="toggleProfile()"]')) {
+    dd.classList.add('hidden');
+  }
+});
+
+// ══════════════════════════════════ VOICE BUTTON ═══════════════════
+
+function toggleVoice() {
+  const btn = document.getElementById('voiceBtn');
+  btn.style.background = 'linear-gradient(135deg,#E05C7A,#c0405e)';
+  btn.style.animation = 'wiggle 0.5s ease-in-out';
+  sendChip('Hey Rasoi AI, show me quick meals!');
+  setTimeout(() => {
+    btn.style.background = '';
+    btn.style.animation = '';
+  }, 2000);
+}
+
+// ══════════════════════════════════ GLOBAL SEARCH ═════════════════
+
+function handleSearch(val) {
+  if (!val.trim()) { filterAndRender(); return; }
+  const v = val.toLowerCase();
+  const filtered = RECIPES.filter(r =>
+    r.name.toLowerCase().includes(v) ||
+    r.tags.some(t => t.includes(v)) ||
+    r.desc.toLowerCase().includes(v)
+  );
+  renderGrid(filtered.length > 0 ? filtered : RECIPES);
+}
+
+// ══════════════════════════════════ NAV TABS ══════════════════════
+
+function switchNav(el, tab) {
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    t.classList.remove('active');
+    t.style.background = ''; t.style.color = ''; t.style.boxShadow = '';
+  });
+  el.classList.add('active');
+}
+
+// ══════════════════════════════════ WEEK PLANNER ═══════════════════
+
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const PLANNER_MEALS = ['Egg Rice','Thoran','Aloo Jeera','Paneer','Egg Roast','—','Rice'];
+const DAY_COLORS = [
+  'linear-gradient(135deg,#2E6B4A,#16331F)',
+  'linear-gradient(135deg,#2C6B8C,#1a4a63)',
+  'linear-gradient(135deg,#7C3AED,#5b21b6)',
+  'linear-gradient(135deg,#E2872E,#B5621A)',
+  'linear-gradient(135deg,#10B981,#059669)',
+  'linear-gradient(135deg,#E05C7A,#c0405e)',
+  'linear-gradient(135deg,#F59E0B,#d97706)',
+];
+const TODAY = new Date().getDay(); // 0=Sun
+
+function renderWeekPlanner() {
+  const container = document.getElementById('weekPlanner');
+  container.innerHTML = '';
+  DAYS.forEach((day, i) => {
+    const isToday = (i + 1) % 7 === TODAY;
+    const div = document.createElement('div');
+    div.className = 'text-center rounded-16 p-3 cursor-pointer transition-all hover:scale-105';
+    div.style.cssText = `border-radius:16px; background:${isToday ? DAY_COLORS[i] : '#F4EDD8'}; border:2px solid ${isToday ? 'transparent' : '#E1EBDA'}`;
+    div.innerHTML = `
+      <div class="text-xs font-600 mb-1" style="color:${isToday ? 'rgba(255,255,255,0.8)' : '#5A5248'}; font-weight:600">${day}</div>
+      <div class="text-lg mb-1">${PLANNER_MEALS[i] === '—' ? '➕' : '🍛'}</div>
+      <div class="text-[10px] font-500 leading-tight" style="color:${isToday ? 'white' : '#241F18'}; font-weight:500">${PLANNER_MEALS[i]}</div>
+    `;
+    div.onclick = () => {
+      div.style.background = DAY_COLORS[i];
+      div.querySelectorAll('div').forEach(d => d.style.color = 'white');
+    };
+    container.appendChild(div);
+  });
+}
+
+// ══════════════════════════════════ INIT ══════════════════════════
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderIngredients();
+  filterAndRender();
+  renderWeekPlanner();
+  updateSliderFill(document.getElementById('budgetSlider'));
+  // Initialize nutrition sliders
+  document.querySelectorAll('.slider-track').forEach(s => updateSliderFill(s));
+});
+</script>
+</body>
+</html>
